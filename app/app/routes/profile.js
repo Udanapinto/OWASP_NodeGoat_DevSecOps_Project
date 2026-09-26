@@ -1,3 +1,4 @@
+const validator = require("validator");
 const ProfileDAO = require("../data/profile-dao").ProfileDAO;
 const ESAPI = require("node-esapi");
 const {
@@ -78,11 +79,14 @@ function ProfileHandler(db) {
         const {
             userId
         } = req.session;
+        
+        const safeFirstName = validator.escape(firstName);
+        const safeLastName = validator.escape(lastName);
 
         profile.updateUser(
             parseInt(userId),
-            firstName,
-            lastName,
+            safeFirstName,
+            safeLastName,
             ssn,
             dob,
             address,
