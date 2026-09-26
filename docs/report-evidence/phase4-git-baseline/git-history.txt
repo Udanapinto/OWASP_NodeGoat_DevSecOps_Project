@@ -1,0 +1,6 @@
+* dcb1f22 (HEAD -> member1/IT24100139, tag: vulnerable-baseline, origin/main, origin/develop, main, develop) Import untouched OWASP NodeGoat vulnerable baseline
+* b6b6263 Add Phase 3 NodeGoat import automation script
+*   caee5af Merge remote main into local main
+|\  
+| * b7e5b11 Initial commit
+* c7e8def Initial commit
