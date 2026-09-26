@@ -1,0 +1,11 @@
+HTTP/1.1 302 Found
+X-Powered-By: Express
+Location: /login
+Vary: Accept
+Content-Type: text/plain; charset=utf-8
+Content-Length: 28
+set-cookie: connect.sid=s%3AWqp5O4W9gDLBoXZjVRRg83q5gUuTB2m1.vC4P5SoJAeozMX77wOKlx3bPU%2FN8zfDyH4V%2FwT%2FQRL4; Path=/; HttpOnly
+Date: Sat, 26 Sep 2026 04:13:22 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+
