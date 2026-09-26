@@ -1,0 +1,60 @@
+app/app/routes/benefits.js:2:    BenefitsDAO
+app/app/routes/benefits.js:3:} = require("../data/benefits-dao");
+app/app/routes/benefits.js:8:function BenefitsHandler(db) {
+app/app/routes/benefits.js:11:    const benefitsDAO = new BenefitsDAO(db);
+app/app/routes/benefits.js:13:    this.displayBenefits = (req, res, next) => {
+app/app/routes/benefits.js:15:        benefitsDAO.getAllNonAdminUsers((error, users) => {
+app/app/routes/benefits.js:19:            return res.render("benefits", {
+app/app/routes/benefits.js:22:                    isAdmin: true
+app/app/routes/benefits.js:29:    this.updateBenefits = (req, res, next) => {
+app/app/routes/benefits.js:31:            userId,
+app/app/routes/benefits.js:32:            benefitStartDate
+app/app/routes/benefits.js:35:        benefitsDAO.updateBenefits(userId, benefitStartDate, (error) => {
+app/app/routes/benefits.js:39:            benefitsDAO.getAllNonAdminUsers((error, users) => {
+app/app/routes/benefits.js:45:                        isAdmin: true
+app/app/routes/benefits.js:51:                return res.render("benefits", data);
+app/app/routes/benefits.js:57:module.exports = BenefitsHandler;
+app/app/routes/index.js:3:const BenefitsHandler = require("./benefits");
+app/app/routes/index.js:17:    const benefitsHandler = new BenefitsHandler(db);
+app/app/routes/index.js:27:    const isAdmin = sessionHandler.isAdminUserMiddleware;
+app/app/routes/index.js:54:    // Benefits Page
+app/app/routes/index.js:55:    app.get("/benefits", isLoggedIn, benefitsHandler.displayBenefits);
+app/app/routes/index.js:56:    app.post("/benefits", isLoggedIn, benefitsHandler.updateBenefits);
+app/app/routes/index.js:58:     app.get("/benefits", isLoggedIn, isAdmin, benefitsHandler.displayBenefits);
+app/app/routes/index.js:59:     app.post("/benefits", isLoggedIn, isAdmin, benefitsHandler.updateBenefits);
+app/app/routes/index.js:63:    app.get("/allocations/:userId", isLoggedIn, allocationsHandler.displayAllocations);
+app/app/routes/session.js:25:    this.isAdminUserMiddleware = (req, res, next) => {
+app/app/routes/session.js:26:        if (req.session.userId) {
+app/app/routes/session.js:27:            return userDAO.getUserById(req.session.userId, (err, user) => {
+app/app/routes/session.js:28:               return user && user.isAdmin ? next() : res.redirect("/login");
+app/app/routes/session.js:37:        if (req.session.userId) {
+app/app/routes/session.js:116:            req.session.userId = user._id;
+app/app/routes/session.js:117:            return res.redirect(user.isAdmin ? "/benefits" : "/dashboard");
+app/app/routes/session.js:230:                        req.session.userId = user._id;
+app/app/routes/session.js:235:                        req.session.userId = user._id;
+app/app/routes/session.js:236:                        // Set userId property. Required for left nav menu links
+app/app/routes/session.js:237:                        user.userId = user._id;
+app/app/routes/session.js:257:        let userId;
+app/app/routes/session.js:259:        if (!req.session.userId) {
+app/app/routes/session.js:264:        userId = req.session.userId;
+app/app/routes/session.js:266:        userDAO.getUserById(userId, (err, doc) => {
+app/app/routes/session.js:268:            doc.userId = userId;
+app/app/routes/memos.js:22:            userId
+app/app/routes/memos.js:29:                userId: userId,
+app/app/routes/profile.js:15:            userId
+app/app/routes/profile.js:20:        profile.getByUserId(parseInt(userId), (err, doc) => {
+app/app/routes/profile.js:22:            doc.userId = userId;
+app/app/routes/profile.js:79:            userId
+app/app/routes/profile.js:83:            parseInt(userId),
+app/app/routes/profile.js:98:                user.userId = userId;
+app/app/routes/contributions.js:14:            userId
+app/app/routes/contributions.js:17:        contributionsDAO.getByUserId(userId, (error, contrib) => {
+app/app/routes/contributions.js:20:            contrib.userId = userId; //set for nav menu items
+app/app/routes/contributions.js:43:            userId
+app/app/routes/contributions.js:52:                userId,
+app/app/routes/contributions.js:60:                userId,
+app/app/routes/contributions.js:65:        contributionsDAO.update(userId, preTax, afterTax, roth, (err, contributions) => {
+app/app/routes/allocations.js:14:        const { userId } = req.session;
+app/app/routes/allocations.js:17:            userId
+app/app/routes/allocations.js:23:        allocationsDAO.getByUserIdAndThreshold(userId, threshold, (err, allocations) => {
+app/app/routes/allocations.js:26:                userId,
