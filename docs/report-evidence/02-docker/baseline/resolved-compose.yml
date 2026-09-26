@@ -1,0 +1,36 @@
+name: nodegoat-devsecops
+services:
+  mongo:
+    expose:
+      - "27017"
+    image: mongo:4.4
+    networks:
+      default: null
+    user: mongodb
+  web:
+    build:
+      context: /home/isuru/Projects/nodegoat-devsecops/app
+      dockerfile: Dockerfile
+    command:
+      - sh
+      - -c
+      - " until nc -z -w 2 mongo 27017 && echo 'MongoDB is ready' && node artifacts/db-reset.js
+        && npm start; do\n  echo 'Waiting for MongoDB...';\n  sleep 2;\ndone "
+    depends_on:
+      mongo:
+        condition: service_started
+        required: true
+    environment:
+      MONGODB_URI: mongodb://mongo:27017/nodegoat
+      NODE_ENV: development
+    networks:
+      default: null
+    ports:
+      - mode: ingress
+        host_ip: 127.0.0.1
+        target: 4000
+        published: "4000"
+        protocol: tcp
+networks:
+  default:
+    name: nodegoat-devsecops_default

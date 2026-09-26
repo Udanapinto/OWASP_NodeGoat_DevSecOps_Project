@@ -1,0 +1,3 @@
+NAME                         IMAGE                                                                     COMMAND                  SERVICE   CREATED       STATUS         PORTS
+nodegoat-devsecops-mongo-1   mongo:4.4                                                                 "docker-entrypoint.s…"   mongo     5 hours ago   Up 3 minutes   27017/tcp
+nodegoat-devsecops-web-1     sha256:e631e67919603faf9ef80a5495a733a790bb5b0e15c818a805109587fdaed79e   "docker-entrypoint.s…"   web       5 hours ago   Up 3 minutes   127.0.0.1:4000->4000/tcp
