@@ -1,0 +1,11 @@
+tag vulnerable-baseline
+Tagger: Udanapinto <isuruudanapinthu@outlook.com>
+Date:   Thu Sep 24 10:37:36 2026 +0530
+
+Untouched OWASP NodeGoat vulnerable baseline
+
+commit dcb1f224310903fd9693594e4cd69b6710af572f
+Author: Udanapinto <isuruudanapinthu@outlook.com>
+Date:   Thu Sep 24 10:37:30 2026 +0530
+
+    Import untouched OWASP NodeGoat vulnerable baseline
