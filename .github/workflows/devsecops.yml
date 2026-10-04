@@ -1,0 +1,187 @@
+name: DevSecOps Pipeline
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
+
+env:
+  NODE_VERSION: '16'
+  DOCKER_IMAGE: nodegoat-devsecops-web
+
+jobs:
+  build-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: app/package-lock.json
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+      - name: Run application tests
+        working-directory: app
+        run: npm test --if-present
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.DOCKER_IMAGE }}:${{ github.sha }} ./app
+          docker tag ${{ env.DOCKER_IMAGE }}:${{ github.sha }} ${{ env.DOCKER_IMAGE }}:latest
+      - name: Save Docker image as artifact
+        run: docker save ${{ env.DOCKER_IMAGE }}:latest -o /tmp/nodegoat-image.tar
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nodegoat-image
+          path: /tmp/nodegoat-image.tar
+          retention-days: 1
+
+  sast-semgrep:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Run Semgrep
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: >-
+            p/security-audit
+            p/owasp-top-ten
+            p/javascript
+            p/nodejs
+          generateSarif: true
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: semgrep.sarif
+      - name: Fail on HIGH/ERROR findings
+        run: |
+          if [ -f semgrep.sarif ]; then
+            HIGH_COUNT=$(cat semgrep.sarif | jq '[.runs[].results[] | select(.level == "error")] | length')
+            echo "Semgrep ERROR findings: $HIGH_COUNT"
+            if [ "$HIGH_COUNT" -gt 0 ]; then
+              echo "::error::Semgrep found $HIGH_COUNT high-severity issue(s). Pipeline blocked."
+              exit 1
+            fi
+          fi
+
+  sca-npm-audit:
+    name: SCA (npm audit)
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Install dependencies
+        working-directory: app
+        run: npm ci
+      - name: Run npm audit
+        working-directory: app
+        run: |
+          npm audit --audit-level=critical --json > /tmp/npm-audit.json || true
+          npm audit --audit-level=critical > /tmp/npm-audit.txt || true
+          cat /tmp/npm-audit.txt
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: |
+            /tmp/npm-audit.json
+            /tmp/npm-audit.txt
+      - name: Fail on CRITICAL findings
+        run: |
+          CRITICAL=$(cat /tmp/npm-audit.json | jq '.metadata.vulnerabilities.critical // 0')
+          echo "Critical vulnerabilities: $CRITICAL"
+          if [ "$CRITICAL" -gt 0 ]; then
+            echo "::error::npm audit found $CRITICAL critical vulnerability(ies). Pipeline blocked."
+            exit 1
+          fi
+
+  secrets-gitleaks:
+    name: Secrets (Gitleaks)
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: false
+      - name: Fail on any secret
+        run: |
+          if [ -f gitleaks-report.json ]; then
+            COUNT=$(cat gitleaks-report.json | jq '. | length' 2>/dev/null || echo 0)
+            if [ "$COUNT" -gt 0 ]; then
+              echo "::error::Gitleaks found $COUNT secret(s). Pipeline blocked."
+              exit 1
+            fi
+          fi
+
+  container-trivy:
+    name: Container (Trivy)
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Download Docker image artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: nodegoat-image
+          path: /tmp
+      - name: Load Docker image
+        run: docker load -i /tmp/nodegoat-image.tar
+      - name: Run Trivy
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: ${{ env.DOCKER_IMAGE }}:latest
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+          ignore-unfixed: true
+      - name: Upload Trivy SARIF
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: trivy-results.sarif
+
+  security-gate:
+    name: Security Gate (PASS/FAIL)
+    runs-on: ubuntu-latest
+    needs: [build-test, sast-semgrep, sca-npm-audit, secrets-gitleaks, container-trivy]
+    if: always()
+    steps:
+      - name: Evaluate all gates
+        run: |
+          echo "========================================="
+          echo "DevSecOps Security Gate Summary"
+          echo "========================================="
+          echo "Build & Test: ${{ needs.build-test.result }}"
+          echo "SAST (Semgrep): ${{ needs.sast-semgrep.result }}"
+          echo "SCA (npm audit): ${{ needs.sca-npm-audit.result }}"
+          echo "Secrets (Gitleaks): ${{ needs.secrets-gitleaks.result }}"
+          echo "Container (Trivy): ${{ needs.container-trivy.result }}"
+          echo "========================================="
+          if [ "${{ needs.build-test.result }}" != "success" ] || [ "${{ needs.sast-semgrep.result }}" != "success" ] || [ "${{ needs.sca-npm-audit.result }}" != "success" ] || [ "${{ needs.secrets-gitleaks.result }}" != "success" ] || [ "${{ needs.container-trivy.result }}" != "success" ]; then
+            echo "::error::One or more security gates failed. Build BLOCKED."
+            exit 1
+          fi
+          echo "All security gates passed."
