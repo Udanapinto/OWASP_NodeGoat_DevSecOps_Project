@@ -16,4 +16,4 @@ The After-Fix Trivy scan was performed on the current NodeGoat web container ima
 
 The repository history and available baseline evidence did not contain a previous Trivy scan report. Therefore, Before values are recorded as N/A rather than estimated or invented.
 
-The After-Fix results are based on the generated `trivy-affter.json`report.
+The After-Fix results are based on the generated `trivy-after.json`report.
