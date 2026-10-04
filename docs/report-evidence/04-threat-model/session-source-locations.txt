@@ -1,0 +1,60 @@
+app/app/routes/index.js:1:const SessionHandler = require("./session");
+app/app/routes/index.js:15:    const sessionHandler = new SessionHandler(db);
+app/app/routes/index.js:24:    const isLoggedIn = sessionHandler.isLoggedInMiddleware;
+app/app/routes/index.js:27:    const isAdmin = sessionHandler.isAdminUserMiddleware;
+app/app/routes/index.js:30:    app.get("/", sessionHandler.displayWelcomePage);
+app/app/routes/index.js:33:    app.get("/login", sessionHandler.displayLoginPage);
+app/app/routes/index.js:34:    app.post("/login", sessionHandler.handleLoginRequest);
+app/app/routes/index.js:37:    app.get("/signup", sessionHandler.displaySignupPage);
+app/app/routes/index.js:38:    app.post("/signup", sessionHandler.handleSignup);
+app/app/routes/index.js:41:    app.get("/logout", sessionHandler.displayLogoutPage);
+app/app/routes/index.js:44:    app.get("/dashboard", isLoggedIn, sessionHandler.displayWelcomePage);
+app/app/routes/index.js:71:        // Insecure way to handle redirects by taking redirect url from query string
+app/app/routes/session.js:7:/* The SessionHandler must be constructed with a connected db */
+app/app/routes/session.js:8:function SessionHandler(db) {
+app/app/routes/session.js:26:        if (req.session.userId) {
+app/app/routes/session.js:27:            return userDAO.getUserById(req.session.userId, (err, user) => {
+app/app/routes/session.js:37:        if (req.session.userId) {
+app/app/routes/session.js:104:            // A2-Broken Authentication and Session Management
+app/app/routes/session.js:105:            // Upon login, a security best practice with regards to cookies session management
+app/app/routes/session.js:106:            // would be to regenerate the session id so that if an id was already created for
+app/app/routes/session.js:107:            // a user on an insecure medium (i.e: non-HTTPS website or otherwise), or if an
+app/app/routes/session.js:109:            // then the old session id will render useless as the logged-in user with new privileges
+app/app/routes/session.js:110:            // holds a new session id now.
+app/app/routes/session.js:112:            // Fix the problem by regenerating a session in each login
+app/app/routes/session.js:113:            // by wrapping the below code as a function callback for the method req.session.regenerate()
+app/app/routes/session.js:115:            // `req.session.regenerate(() => {})`
+app/app/routes/session.js:116:            req.session.userId = user._id;
+app/app/routes/session.js:122:        req.session.destroy(() => res.redirect("/"));
+app/app/routes/session.js:144:        const PASS_RE = /^.{1,20}$/;
+app/app/routes/session.js:148:        const PASS_RE =/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+app/app/routes/session.js:171:        if (!PASS_RE.test(password)) {
+app/app/routes/session.js:227:                    sessionDAO.startSession(user._id, (err, sessionId) => {
+app/app/routes/session.js:229:                        res.cookie("session", sessionId);
+app/app/routes/session.js:230:                        req.session.userId = user._id;
+app/app/routes/session.js:234:                    req.session.regenerate(() => {
+app/app/routes/session.js:235:                        req.session.userId = user._id;
+app/app/routes/session.js:259:        if (!req.session.userId) {
+app/app/routes/session.js:264:        userId = req.session.userId;
+app/app/routes/session.js:277:module.exports = SessionHandler;
+app/app/routes/memos.js:23:        } = req.session;
+app/app/routes/profile.js:16:        } = req.session;
+app/app/routes/profile.js:53:        // The following regexPattern that is used to validate the bankRouting number is insecure and vulnerable to
+app/app/routes/profile.js:80:        } = req.session;
+app/app/routes/contributions.js:15:        } = req.session;
+app/app/routes/contributions.js:31:        // Insecure use of eval() to parse inputs
+app/app/routes/contributions.js:44:        } = req.session;
+app/app/routes/allocations.js:13:        // Fix for A4 Insecure DOR -  take user id from session instead of from URL param
+app/app/routes/allocations.js:14:        const { userId } = req.session;
+app/server.js:6:const session = require("express-session");
+app/server.js:20:// Load keys for establishing secure HTTPS connection
+app/server.js:77:    // Enable session management using express middleware
+app/server.js:78:    app.use(session({
+app/server.js:80:        //    return genuuid() // use UUIDs for session IDs
+app/server.js:89:        key: "sessionId",
+app/server.js:96:            httpOnly: true
+app/server.js:98:            // secure: true
+app/server.js:120:    // TODO: make sure assets are declared before app.use(session())
+app/server.js:125:    // Fix for A9 - Insecure Dependencies
+app/server.js:144:    // Insecure HTTP connection
+app/server.js:151:    // Use secure HTTPS protocol

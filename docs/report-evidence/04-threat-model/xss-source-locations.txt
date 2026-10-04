@@ -1,0 +1,61 @@
+app/app/views/signup.html:52:            {% if userNameError || firstNameError || lastNameError || passwordError || verifyError || emailError %}
+app/app/views/signup.html:57:                        <p>{{userNameError}}{{firstNameError}}{{lastNameError}}{{passwordError}}{{verifyError}}{{emailError}}</p>
+app/app/views/signup.html:79:                                    <label for="firstName">First Name</label>
+app/app/views/signup.html:80:                                    <input type="text" class="form-control" id="firstName" value="{{firstName}}" name="firstName" placeholder="Enter first name">
+app/app/views/signup.html:85:                                    <label for="lastName">Last Name</label>
+app/app/views/signup.html:86:                                    <input type="text" class="form-control" id="lastName" value="{{lastName}}" name="lastName" placeholder="Enter last name">
+app/app/views/signup.html:90:                                    <label for="lastname">Password</label>
+app/app/views/layout.html:75:                        <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-user"></i> {{firstName}} {{lastName}} <b class="caret"></b></a>
+app/app/views/tutorial/a3.html:167:    autoescape: true //default value
+app/app/views/tutorial/a2.html:108:    firstName: firstName,
+app/app/views/tutorial/a2.html:109:    lastName: lastName,
+app/app/views/tutorial/a2.html:121:    firstName: firstName,
+app/app/views/tutorial/a2.html:122:    lastName: lastName,
+app/app/views/allocations.html:35:                <strong>Asset Allocations for {{allocation.firstName}} {{allocation.lastName}}</strong>
+app/app/views/benefits.html:51:                        <td>{{user.firstName}}</td>
+app/app/views/benefits.html:52:                        <td>{{user.lastName}}</td>
+app/app/views/profile.html:40:                        <label for="firstName">First Name</label>
+app/app/views/profile.html:41:                        <input type="text" class="form-control" id="firstName" name="firstName" value="{{firstNameSafeString}}" placeholder="Enter first name">
+app/app/views/profile.html:44:                        <label for="lastName">Last Name</label>
+app/app/views/profile.html:45:                        <input type="text" class="form-control" id="lastName" name="lastName" value="{{lastName}}" placeholder="Enter last name">
+app/app/views/profile.html:77:                    refer to a firstNameSafeURLString field on the doc object set by the controller for this template -->
+app/app/views/profile.html:78:                    <a href="{{firstNameSafeString}}">Google search this profile by name</a>
+app/app/data/user-dao.js:17:    this.addUser = (userName, firstName, lastName, password, email, callback) => {
+app/app/data/user-dao.js:22:            firstName,
+app/app/data/user-dao.js:23:            lastName,
+app/app/data/contributions-dao.js:43:                        contributions.firstName = user.firstName;
+app/app/data/contributions-dao.js:44:                        contributions.lastName = user.lastName;
+app/app/data/contributions-dao.js:75:                    contributions.firstName = user.firstName;
+app/app/data/contributions-dao.js:76:                    contributions.lastName = user.lastName;
+app/app/data/allocations-dao.js:46:                    allocations.firstName = user.firstName;
+app/app/data/allocations-dao.js:47:                    allocations.lastName = user.lastName;
+app/app/data/allocations-dao.js:98:                    alloc.firstName = user.firstName;
+app/app/data/allocations-dao.js:99:                    alloc.lastName = user.lastName;
+app/app/data/profile-dao.js:42:    this.updateUser = (userId, firstName, lastName, ssn, dob, address, bankAcc, bankRouting, callback) => {
+app/app/data/profile-dao.js:46:        if (firstName) {
+app/app/data/profile-dao.js:47:            user.firstName = firstName;
+app/app/data/profile-dao.js:49:        if (lastName) {
+app/app/data/profile-dao.js:50:            user.lastName = lastName;
+app/app/routes/session.js:138:    const validateSignup = (userName, firstName, lastName, password, verify, email, errors) => {
+app/app/routes/session.js:152:        errors.firstNameError = "";
+app/app/routes/session.js:153:        errors.lastNameError = "";
+app/app/routes/session.js:163:        if (!FNAME_RE.test(firstName)) {
+app/app/routes/session.js:164:            errors.firstNameError = "Invalid first name.";
+app/app/routes/session.js:167:        if (!LNAME_RE.test(lastName)) {
+app/app/routes/session.js:168:            errors.lastNameError = "Invalid last name.";
+app/app/routes/session.js:194:            firstName,
+app/app/routes/session.js:195:            lastName,
+app/app/routes/session.js:206:        if (validateSignup(userName, firstName, lastName, password, verify, email, errors)) {
+app/app/routes/session.js:220:                userDAO.addUser(userName, firstName, lastName, password, email, (err, user) => {
+app/app/routes/profile.js:26:            // doesn't end up as an XSS attack, the context is incorrect as it is encoding the firstname for HTML
+app/app/routes/profile.js:43:            firstName,
+app/app/routes/profile.js:44:            lastName,
+app/app/routes/profile.js:64:            const firstNameSafeString = firstName;
+app/app/routes/profile.js:67:                firstNameSafeString,
+app/app/routes/profile.js:68:                lastName,
+app/app/routes/profile.js:84:            firstName,
+app/app/routes/profile.js:85:            lastName,
+app/app/routes/profile.js:96:                //firstName = firstName.trim();
+app/server.js:136:        // Autoescape disabled
+app/server.js:137:        autoescape: false
+app/server.js:140:        autoescape: true // default value
