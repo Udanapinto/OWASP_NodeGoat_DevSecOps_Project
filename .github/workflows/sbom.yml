@@ -1,0 +1,39 @@
+name: SBOM Generation
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  sbom:
+    name: Generate SBOM with Syft
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t nodegoat-sbom:latest ./app
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0.22.1
+        with:
+          image: nodegoat-sbom:latest
+          format: cyclonedx-json
+          output-file: sbom.cyclonedx.json
+          artifact-name: nodegoat-sbom
+
+      - name: Scan SBOM with Grype
+        uses: anchore/scan-action@v4
+        with:
+          sbom: sbom.cyclonedx.json
+          fail-build: false
+          severity-cutoff: critical
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom.cyclonedx.json
