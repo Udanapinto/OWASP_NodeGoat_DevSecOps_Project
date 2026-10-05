@@ -78,7 +78,7 @@ jobs:
 
       - name: Fail on HIGH/ERROR findings
         run: |
-         HIGH_COUNT=$(cat semgrep.sarif | jq '[.runs[].results[] | select(.level == "error")]
+         HIGH_COUNT=$(jq '[.runs[].results[] | select(.level == "error")] | length' semgrep.sarif)
          echo "Semgrep ERROR findings: $HIGH_COUNT"
 
          if [ "$HIGH_COUNT" -gt 0 ]; then
