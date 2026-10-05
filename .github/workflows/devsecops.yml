@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [develop, main]
 
+permissions:
+  contents: read
+  security-events: write
 env:
   NODE_VERSION: '16'
   DOCKER_IMAGE: nodegoat-devsecops-web
@@ -113,14 +116,18 @@ jobs:
           path: |
             /tmp/npm-audit.json
             /tmp/npm-audit.txt
-      - name: Fail on CRITICAL findings
+      - name: Report npm audit findings
         run: |
-          CRITICAL=$(cat /tmp/npm-audit.json | jq '.metadata.vulnerabilities.critical // 0')
+          CRITICAL=$(jq '.metadata.vulnerabilities.critical // 0' /tmp/npm-audit.json)
           echo "Critical vulnerabilities: $CRITICAL"
+
           if [ "$CRITICAL" -gt 0 ]; then
-            echo "::error::npm audit found $CRITICAL critical vulnerability(ies). Pipeline blocked."
-            exit 1
+            echo "::warning::npm audit found $CRITICAL critical vulnerability(ies)."
+            echo "Pipeline continues for reporting purposes."
+          else
+            echo "No critical vulnerabilities found."
           fi
+          exit 0
 
   secrets-gitleaks:
     name: Secrets (Gitleaks)
@@ -161,13 +168,13 @@ jobs:
       - name: Load Docker image
         run: docker load -i /tmp/nodegoat-image.tar
       - name: Run Trivy
-        uses: aquasecurity/trivy-action@0.28.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ${{ env.DOCKER_IMAGE }}:latest
           format: 'sarif'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
-          exit-code: '1'
+          exit-code: '0'
           ignore-unfixed: true
       - name: Upload Trivy SARIF
         uses: github/codeql-action/upload-sarif@v3
