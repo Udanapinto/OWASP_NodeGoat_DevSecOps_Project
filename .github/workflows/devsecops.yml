@@ -49,30 +49,42 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      - name: Install Semgrep
+        run: pip install semgrep
+
       - name: Run Semgrep
-        uses: returntocorp/semgrep-action@v1
-        with:
-          config: >-
-            p/security-audit
-            p/owasp-top-ten
-            p/javascript
-            p/nodejs
-          generateSarif: true
+        run: |
+          semgrep \
+            --config=p/security-audit \
+            --config=p/owasp-top-ten \
+            --config=p/javascript \
+            --config=p/nodejs \
+            --sarif \
+            --output=semgrep.sarif || true
+
+      - name: Check Semgrep SARIF
+        run: |
+          if [ ! -f semgrep.sarif ]; then
+            echo "::error::Semgrep SARIF file was not created."
+            exit 1
+          fi
+          echo "Semgrep SARIF created successfully."
+
       - name: Upload SARIF
         uses: github/codeql-action/upload-sarif@v3
         if: always()
         with:
           sarif_file: semgrep.sarif
+
       - name: Fail on HIGH/ERROR findings
         run: |
-          if [ -f semgrep.sarif ]; then
-            HIGH_COUNT=$(cat semgrep.sarif | jq '[.runs[].results[] | select(.level == "error")] | length')
-            echo "Semgrep ERROR findings: $HIGH_COUNT"
-            if [ "$HIGH_COUNT" -gt 0 ]; then
-              echo "::error::Semgrep found $HIGH_COUNT high-severity issue(s). Pipeline blocked."
-              exit 1
-            fi
-          fi
+         HIGH_COUNT=$(cat semgrep.sarif | jq '[.runs[].results[] | select(.level == "error")]
+         echo "Semgrep ERROR findings: $HIGH_COUNT"
+
+         if [ "$HIGH_COUNT" -gt 0 ]; then
+          echo "::error::Semgrep found $HIGH_COUNT high-severity issue(s). Pipeline blocked."
+          exit 1
+         fi
 
   sca-npm-audit:
     name: SCA (npm audit)
